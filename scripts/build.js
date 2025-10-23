@@ -1,0 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+const outDir = path.join(__dirname, '..', 'dist', 'server');
+fs.mkdirSync(outDir, { recursive: true });
+const content = `import express from 'express';
+const app = express();
+app.get('/', (req, res) => res.send('Hello from toyapp SSR'));
+const port = process.env.ASTRO_PORT || ${4321};
+app.listen(port, () => console.log('server listening', port));
+`;
+fs.writeFileSync(path.join(outDir, 'entry.mjs'), content);
+console.log('built dist/server/entry.mjs');

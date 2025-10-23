@@ -11,3 +11,7 @@ envVars: |
   ASTRO_HOST=0.0.0.0
   ASTRO_MODE=production
   API_URL=https://api.example.dev
+
+image:
+  repository: registry.example.com/nswasp/toyapp
+  tag: latest

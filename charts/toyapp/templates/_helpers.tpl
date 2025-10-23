@@ -12,11 +12,13 @@
 {{- if $envStr }}
 {{- $pairs := splitList "\n" $envStr -}}
 {{- range $i, $kv := $pairs -}}
-  {{- $kv := trim $kv "\r" -}}
-  {{- if ne $kv "" -}}
+  {{- $kv := trim $kv -}}
+  {{- if and (ne $kv "") (contains $kv "=") -}}
     {{- $parts := split "=" $kv -}}
-    - name: {{ index $parts 0 | trim }}
-      value: {{ index $parts 1 | default "" | quote }}
+    {{- $name := index $parts 0 | trim }}
+    {{- $value := (slice $parts 1 | join "=") | trim }}
+    - name: {{ $name }}
+      value: {{ $value | quote }}
   {{- end -}}
 {{- end -}}
 {{- end -}}

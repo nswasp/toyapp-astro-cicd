@@ -1,0 +1,12 @@
+{
+  "name": "toyapp",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "node ./scripts/build.js",
+    "start": "node dist/server/entry.mjs"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {}
+}
