@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-deploy-%s" (include "chart.basename" .) .Release.Name | trunc 63 | trimSuffix "-" }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "chart.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "chart.fullname" . }}
+    spec:
+      containers:
+        - name: {{ include "chart.basename" . }}
+          image: "{{ .Values.image.repository | default "registry.example.com/nswasp/toyapp" }}:{{ .Values.image.tag | default "latest" }}"
+          ports:
+            - containerPort: {{ .Values.app.port }}
+          env:
+{{ include "chart.parseEnv" . | indent 12 }}
+      {{- if .Values.app.auth.enabled }}
+      - name: nginx-sidecar
+        image: nginx:stable-alpine
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: nginx-htpasswd
+            mountPath: /etc/nginx/.htpasswd
+            subPath: auth
+          - name: nginx-conf
+            mountPath: /etc/nginx/conf.d/default.conf
+            subPath: default.conf
+      volumes:
+        - name: nginx-htpasswd
+          secret:
+            secretName: {{ printf "%s-basic-auth-%s" (include "chart.basename" .) .Release.Name | trunc 63 | trimSuffix "-" }}
+            items:
+              - key: auth
+                path: auth
+        - name: nginx-conf
+          configMap:
+            name: {{ printf "%s-nginx-conf-%s" (include "chart.basename" .) .Release.Name | trunc 63 | trimSuffix "-" }}
+      {{- end }}

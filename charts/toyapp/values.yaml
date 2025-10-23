@@ -1,0 +1,13 @@
+app:
+  name: toyapp
+  port: 4321
+  auth:
+    enabled: true
+    username: admin
+    password: changeme
+
+envVars: |
+  ASTRO_PORT=8080
+  ASTRO_HOST=0.0.0.0
+  ASTRO_MODE=production
+  API_URL=https://api.example.dev

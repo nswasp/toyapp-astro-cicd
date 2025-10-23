@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ printf "%s-route-%s" (include "chart.basename" .) .Release.Name | trunc 63 | trimSuffix "-" }}
+spec:
+  to:
+    kind: Service
+    name: {{ printf "%s-svc-%s" (include "chart.basename" .) .Release.Name | trunc 63 | trimSuffix "-" }}
+  port:
+    targetPort: http
+  tls:
+    termination: edge
