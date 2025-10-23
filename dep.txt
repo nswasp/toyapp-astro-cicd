@@ -1,0 +1,96 @@
+---
+# Source: toyapp/templates/secret-basic-auth.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: toyapp-basic-auth-release-name
+type: Opaque
+data:
+  auth: YWRtaW46Y2hhbmdlbWUK
+---
+# Source: toyapp/templates/nginx-conf.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: toyapp-nginx-conf-release-name
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        auth_basic "Restricted";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        proxy_pass http://127.0.0.1:4321;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+    }
+---
+# Source: toyapp/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: toyapp-svc-release-name
+spec:
+  selector:
+    app: toyapp-release-name
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+# Source: toyapp/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: toyapp-deploy-release-name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: toyapp-release-name
+  template:
+    metadata:
+      labels:
+        app: toyapp-release-name
+    spec:
+      containers:
+        - name: toyapp
+          image: "registry.example.com/nswasp/toyapp:latest"
+          ports:
+            - containerPort: 4321
+        - name: nginx-sidecar
+          image: nginx:stable-alpine
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: nginx-htpasswd
+              mountPath: /etc/nginx/.htpasswd
+              subPath: auth
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+      volumes:
+        - name: nginx-htpasswd
+          secret:
+            secretName: toyapp-basic-auth-release-name
+            items:
+              - key: auth
+                path: auth
+        - name: nginx-conf
+          configMap:
+            name: toyapp-nginx-conf-release-name
+---
+# Source: toyapp/templates/route.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: toyapp-route-release-name
+spec:
+  to:
+    kind: Service
+    name: toyapp-svc-release-name
+  port:
+    targetPort: http
+  tls:
+    termination: edge
