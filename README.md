@@ -44,3 +44,8 @@ oc get route -n $NAMESPACE
 Notes:
 - `app.auth.enabled` toggles creation of a BasicAuth secret and the nginx sidecar. When enabled, traffic is routed via port 8080. When disabled, service targetPort maps to the app port (4321).
 - The Helm helper `chart.parseEnv` converts the `envVars` multi-line string into container env entries.
+
+Additional automation options
+
+- I can render additional variations (e.g., with `--set app.auth.enabled=false` or different image tags) and append or create separate files.
+- I can create a packaged Helm chart (`helm package charts/toyapp`) and push to an OCI registry (requires Helm registry credentials).
